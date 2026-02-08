@@ -52,7 +52,6 @@ def get_congestion_zone_ids():
     manhattan_zones = gdf[gdf['borough'] == 'Manhattan'].copy()
     
     # 3. Calculate Centroids (Center point of each zone)
-    # We switch to a projected CRS (EPSG:2263) for accuracy, then back to Lat/Lon (EPSG:4326)
     manhattan_zones['centroid'] = manhattan_zones.geometry.centroid.to_crs(epsg=4326)
     manhattan_zones['latitude'] = manhattan_zones['centroid'].y
     
@@ -63,24 +62,17 @@ def get_congestion_zone_ids():
     zone_ids = congestion_zones['LocationID'].tolist()
     
     print(f"🗺️  Identified {len(zone_ids)} zones inside the Congestion Zone (South of 60th St).")
-    # print(f"IDs: {zone_ids}") # Uncomment to see the list
     
     return zone_ids
 
 def get_zone_lookup():
-    """
-    Returns a simple DataFrame of ID -> Zone Name for reporting.
-    """
+    
     download_and_extract_shapefile()
     gdf = gpd.read_file(SHAPEFILE_PATH)
     return gdf[['LocationID', 'zone', 'borough']]
 
 def get_border_zone_ids():
-    """
-    Identifies zones immediately NORTH of the cutoff (60th St).
-    Hypothesis: Passengers drop off here to walk into the zone and avoid the toll.
-    Logic: Manhattan zones with Lat > 40.764 (60th St) and Lat < 40.790 (Approx 80th St).
-    """
+    
     download_and_extract_shapefile()
     gdf = gpd.read_file(SHAPEFILE_PATH)
     
@@ -91,8 +83,7 @@ def get_border_zone_ids():
     manhattan['centroid'] = manhattan.geometry.centroid.to_crs(epsg=4326)
     manhattan['latitude'] = manhattan['centroid'].y
     
-    # FILTER: Just North of the Cutoff (The "Border")
-    # 40.764 is 60th St. We look for zones slightly north of this.
+    # 40.764 is 60th St.
     border_zones = manhattan[
         (manhattan['latitude'] >= 40.764) & 
         (manhattan['latitude'] < 40.790)

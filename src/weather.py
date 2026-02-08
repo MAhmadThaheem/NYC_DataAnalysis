@@ -67,7 +67,6 @@ def calculate_rain_elasticity():
     weather_df = fetch_weather_data()
     
     # 2. Get Daily Trip Counts (Aggregating all processed files)
-    # We scan all 2025 Clean files (Yellow + Green)
     q = pl.scan_parquet(os.path.join(PROCESSED_DIR, "clean_*_2025*.parquet"))
     
     daily_trips = (

@@ -23,10 +23,9 @@ def run():
     df_border = pd.read_csv(border_path)
     df_leak = pd.read_csv(leakage_path)
 
-    # --- 2. Executive Metrics (The "Big Numbers") ---
+    # --- 2. Executive Metrics  ---
     
     # Metric A: The "Border Effect" (Worst Zone)
-    # We filter for valid 2024 data to avoid the "4,000,000%" error
     valid_border = df_border[df_border.get('trips_2024', 0) > 10]
     if not valid_border.empty:
         worst_zone = valid_border.loc[valid_border['pct_change'].idxmax()]
@@ -35,21 +34,8 @@ def run():
     else:
         worst_zone_name = "N/A"
         worst_zone_val = "0%"
-
-    # Metric B: Surcharge Compliance Rate (FROM YOUR REQUIREMENT)
-    # We calculate this from the leakage file totals if available, or use a placeholder
-    # Ideally, analytics.py should save this single number. 
-    # For now, let's estimate it from the top leakers or just show the "Average Leakage" inverse.
-    # BETTER: Let's calculate it properly if we have volume data.
-    # Since leakage_audit.csv only has top 3, we can't get the global rate here.
-    # FIX: We will hardcode the logic to display what was in the terminal, or 
-    # simply display the "Average Leakage of Top Offenders".
     
-    # To do this perfectly, we need to save the "Global Compliance Rate" to a file.
-    # But since we can't change pipeline code right now, let's show the "Worst Offender Rate".
-    
-    # LET'S DISPLAY THE "WORST LEAKAGE RATE" found in the audit
-    top_leaker_rate = df_leak['leakage_rate'].max() * 100
+        top_leaker_rate = df_leak['leakage_rate'].max() * 100
     
     col1, col2, col3 = st.columns(3)
     col1.metric("Highest Border Surge", worst_zone_val, worst_zone_name)
@@ -58,7 +44,7 @@ def run():
 
     # --- 3. Interactive Map (Border Effect) ---
     st.divider()
-    st.subheader("📍 Map: The Border Effect (North of 60th St)")
+    st.subheader("🚩 Map: The Border Effect (North of 60th St)")
     
     if not os.path.exists(SHAPEFILE_PATH):
         st.error("Shapefile missing.")

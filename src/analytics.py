@@ -9,7 +9,7 @@ PROCESSED_DIR = "data/processed"
 RESULTS_DIR = "data/results"
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
-# --- HELPER: Load Data Safely ---
+# --- Load Data Safely ---
 def load_data(pattern, year=None):
     """
     Lazy loads parquet files. Falls back to RAW data if PROCESSED is missing for 2024.
@@ -28,7 +28,7 @@ def analyze_leakage():
     """
     Requirement 2: Leakage Audit.
     1. Surcharge Compliance Rate.
-    2. [cite_start]Top 3 Locations with missing surcharges[cite: 30, 31, 32].
+    2. Top 3 Locations with missing surcharges.
     """
     print("\n🔍 Starting Leakage Audit...")
     
@@ -91,7 +91,7 @@ def analyze_leakage():
 
 def compare_volumes():
     """
-    [cite_start]Requirement 3: Yellow vs Green Decline (Q1 2024 vs Q1 2025)[cite: 33, 34].
+    Yellow vs Green Decline (Q1 2024 vs Q1 2025).
     """
     print("\n📉 Starting Volume Decline Analysis (Yellow vs Green)...")
     zone_ids = get_congestion_zone_ids()
@@ -124,14 +124,13 @@ def compare_volumes():
 def analyze_border_effect():
     """
     Visual Audit 1: The Border Effect.
-    [cite_start]Comparing Drop-off counts in "Border Zones" (Full Year 2024 vs Full Year 2025)[cite: 36, 38].
+    Comparing Drop-off counts in "Border Zones" (Full Year 2024 vs Full Year 2025).
     """
     print("\n🗺️  Starting Border Effect Analysis (Full Year Comparison)...")
     border_ids = get_border_zone_ids()
     results = []
 
     for year in [2024, 2025]:
-        # UPDATED: Use * to grab ALL available months, not just Q1
         pattern = os.path.join(PROCESSED_DIR, f"clean_yellow_tripdata_{year}-*.parquet")
         q = load_data(pattern, year)
         
@@ -170,7 +169,7 @@ def analyze_border_effect():
 
 def analyze_velocity_heatmap():
     """
-    [cite_start]Visual Audit 2: Congestion Velocity Heatmap (Q1 24 vs Q1 25)[cite: 39, 41].
+    Visual Audit 2: Congestion Velocity Heatmap (Q1 24 vs Q1 25).
     """
     print("\n🚦 Starting Congestion Velocity Analysis...")
     zone_ids = get_congestion_zone_ids()
@@ -214,7 +213,7 @@ def analyze_velocity_heatmap():
 
 def analyze_tips_economics():
     """
-    [cite_start]Visual Audit 3: Tip Crowding Out[cite: 43, 46].
+    Visual Audit 3: Tip Crowding Out.
     """
     print("\n💰 Starting Tip Economics Analysis...")
     q = pl.scan_parquet(os.path.join(PROCESSED_DIR, "clean_yellow_tripdata_2025*.parquet"))

@@ -1,4 +1,3 @@
-# --- BIG DATA (CRITICAL: Do Not Commit) ---
 # Ignore the raw downloads and processed parquet files
 data/raw/
 data/processed/

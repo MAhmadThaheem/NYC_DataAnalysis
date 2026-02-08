@@ -12,7 +12,6 @@ def generate_executive_summary():
     
     # 1. Total Estimated 2025 Surcharge Revenue
     try:
-        # Use a wildcard pattern for robustness
         revenue_files = os.path.join(PROCESSED_DIR, "clean_*_2025*.parquet")
         
         # Check if files exist before scanning to avoid crashing
@@ -44,13 +43,11 @@ def generate_executive_summary():
     except Exception:
         print("⚠️ Weather data error.")
 
-    # 3. Top Suspicious Vendors (Ghost Trips) - FIXED SECTION
+    # 3. Top Suspicious Vendors (Ghost Trips)
     try:
-        # FIX: Use the string pattern directly, not a list
         audit_pattern = os.path.join(AUDIT_DIR, "*.csv")
         
         if glob.glob(audit_pattern):
-            # FIX: Use scan_csv() which handles wildcards better than read_csv()
             ghost_df = pl.scan_csv(audit_pattern).collect()
             
             print(f"👻 Total Ghost Trips Detected: {len(ghost_df):,}")
@@ -60,7 +57,7 @@ def generate_executive_summary():
                 # Count and Sort strictly
                 top_vendors = (
                     ghost_df["VendorID"]
-                    .value_counts(sort=True) # Ensure we get the highest counts
+                    .value_counts(sort=True)
                     .head(5)
                 )
                 print(top_vendors)

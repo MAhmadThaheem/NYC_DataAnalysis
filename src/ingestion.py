@@ -12,7 +12,6 @@ RAW_DIR = "data/raw"
 BASE_URL = "https://d37ci6vzurychx.cloudfront.net/trip-data"
 
 def download_file(url, dest_path):
-    """Helper to download a file with progress printing."""
     if os.path.exists(dest_path):
         print(f"   ✅ Already exists: {dest_path}")
         return
@@ -31,7 +30,7 @@ def download_file(url, dest_path):
 def generate_imputed_december_2025():
     """
     Imputes missing Dec 2025 data using Weighted Average of Dec 2023 (30%) and Dec 2024 (70%).
-    [cite_start]Requirement: Missing Data Handling [cite: 14]
+    Requirement: Missing Data Handling
     """
     print("\n🔮 Generating Imputed Data for December 2025...")
     
@@ -50,12 +49,11 @@ def generate_imputed_december_2025():
         download_file(url, path)
 
     try:
-        # Load data (using Pandas here for complex sampling logic, permissible for imputation step)
+        # Load data (using Pandas here for complex sampling logic)
         df_23 = pd.read_parquet(file_2023)
         df_24 = pd.read_parquet(file_2024)
 
         # Basic Imputation Logic: Sample rows based on weights
-        # We take a sample size equal to Dec 2024 volume
         target_size = len(df_24)
         
         # Take 30% from 2023, 70% from 2024
@@ -66,7 +64,6 @@ def generate_imputed_december_2025():
         imputed_df = pd.concat([sample_23, sample_24])
         
         # Adjust Dates to Dec 2025
-        # We assume 'tpep_pickup_datetime' exists. We shift the year to 2025.
         if 'tpep_pickup_datetime' in imputed_df.columns:
             imputed_df['tpep_pickup_datetime'] = imputed_df['tpep_pickup_datetime'].apply(lambda x: x.replace(year=2025))
         if 'tpep_dropoff_datetime' in imputed_df.columns:
@@ -90,7 +87,7 @@ def run_ingestion():
         
     print(f"📥 Starting Data Ingestion to {RAW_DIR}...")
 
-    # [cite_start]1. Download 2025 Data (Jan-Nov) - Real Data [cite: 19]
+    # 1. Download 2025 Data (Jan-Nov) - Real Data
     print("   --- 2025 Data (Primary) ---")
     for month in range(1, 12): # Jan to Nov
         month_str = f"{month:02d}"
@@ -99,7 +96,7 @@ def run_ingestion():
             url = f"{BASE_URL}/{fname}"
             download_file(url, os.path.join(RAW_DIR, fname))
 
-    # [cite_start]2. Impute Dec 2025 [cite: 14]
+    # 2. Impute Dec 2025
     generate_imputed_december_2025()
 
     # 3. Download Full 2024 Data (Baseline)

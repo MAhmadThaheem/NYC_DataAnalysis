@@ -3,7 +3,7 @@ import time
 import subprocess
 import sys
 from src import ingestion, processing, geospatial, analytics, weather
-from src import reporting # Import the reporting module we created
+from src import reporting 
 
 def run_pipeline():
     """
