@@ -1,0 +1,12 @@
+# --- BIG DATA (CRITICAL: Do Not Commit) ---
+# Ignore the raw downloads and processed parquet files
+data/raw/
+data/processed/
+
+# Ignore geospatial binaries
+data/shapefiles/
+
+# Ignore all parquet files anywhere in the project (Safety Net)
+*.parquet
+*.zip
+*.gz
