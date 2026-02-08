@@ -2,7 +2,7 @@
 # Ignore the raw downloads and processed parquet files
 data/raw/
 data/processed/
-
+data/audit/
 # Ignore geospatial binaries
 data/shapefiles/
 
