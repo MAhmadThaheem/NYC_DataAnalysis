@@ -19,8 +19,7 @@ def run_pipeline():
     ingestion.run_ingestion()
     
     # 2. Process Data (Schema Unification & Ghost Trip Filtering)
-    # WARNING: This takes time. Only uncomment if you need to re-process raw files.
-    # processing.process_data() 
+    processing.process_data() 
     
     # 3. Download Geospatial Data
     geospatial.download_and_extract_shapefile()
