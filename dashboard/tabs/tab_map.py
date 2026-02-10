@@ -16,17 +16,24 @@ def run():
     border_path = os.path.join(RESULTS_DIR, "border_effect.csv")
     leakage_path = os.path.join(RESULTS_DIR, "leakage_audit.csv")
     
+    # Check if files exist
     if not os.path.exists(border_path) or not os.path.exists(leakage_path):
         st.error("❌ Data missing. Please run 'python pipeline.py' first.")
         return
 
-    df_border = pd.read_csv(border_path)
-    df_leak = pd.read_csv(leakage_path)
+    try:
+        df_border = pd.read_csv(border_path)
+        df_leak = pd.read_csv(leakage_path)
+    except Exception as e:
+        st.error(f"❌ Error reading CSV files: {e}")
+        return
 
-    # --- 2. Executive Metrics  ---
+    # --- 2. Executive Metrics (The "Big Numbers") ---
     
     # Metric A: The "Border Effect" (Worst Zone)
+    # We filter for valid 2024 data to avoid the "4,000,000%" error
     valid_border = df_border[df_border.get('trips_2024', 0) > 10]
+    
     if not valid_border.empty:
         worst_zone = valid_border.loc[valid_border['pct_change'].idxmax()]
         worst_zone_name = worst_zone['zone']
@@ -34,9 +41,16 @@ def run():
     else:
         worst_zone_name = "N/A"
         worst_zone_val = "0%"
+
+    # Metric B: Surcharge Compliance Rate
+    # FIX: Initialize the variable first to prevent UnboundLocalError
+    top_leaker_rate = 0.0
     
+    # Calculate only if data exists
+    if not df_leak.empty and 'leakage_rate' in df_leak.columns:
+        # leakage_rate is stored as 0.12 (12%), so we multiply by 100
         top_leaker_rate = df_leak['leakage_rate'].max() * 100
-    
+
     col1, col2, col3 = st.columns(3)
     col1.metric("Highest Border Surge", worst_zone_val, worst_zone_name)
     col2.metric("Max Leakage Rate", f"{top_leaker_rate:.1f}%", "Trips missing surcharge")
@@ -44,7 +58,7 @@ def run():
 
     # --- 3. Interactive Map (Border Effect) ---
     st.divider()
-    st.subheader("🚩 Map: The Border Effect (North of 60th St)")
+    st.subheader("📍 Map: The Border Effect (North of 60th St)")
     
     if not os.path.exists(SHAPEFILE_PATH):
         st.error("Shapefile missing.")
@@ -88,21 +102,28 @@ def run():
     except Exception as e:
         st.error(f"Map Error: {e}")
 
-    # --- 4. The Leakage Audit (Your Specific Request) ---
+    # --- 4. The Leakage Audit ---
     st.divider()
     st.subheader("🕵️ Leakage Audit: Who isn't paying?")
     st.markdown("This table identifies the **Top 3 Pickup Locations** where trips end in the zone but **fail to pay the surcharge**.")
     
-    # Format the table nicely
-    display_df = df_leak.copy()
-    display_df['leakage_rate'] = (display_df['leakage_rate'] * 100).map('{:.1f}%'.format)
-    display_df = display_df.rename(columns={
-        "zone": "Pickup Zone",
-        "borough": "Borough",
-        "leakage_rate": "% Missing Surcharge",
-        "volume": "Total Trips Audited"
-    })
-    
-    st.table(display_df[['Pickup Zone', 'Borough', '% Missing Surcharge', 'Total Trips Audited']])
-    
-    st.caption("ℹ️ 'Missing Surcharge' means the trip ended in the congestion zone, but the surcharge field was $0.00.")
+    if not df_leak.empty:
+        # Format the table nicely
+        display_df = df_leak.copy()
+        if 'leakage_rate' in display_df.columns:
+            display_df['leakage_rate'] = (display_df['leakage_rate'] * 100).map('{:.1f}%'.format)
+        
+        display_df = display_df.rename(columns={
+            "zone": "Pickup Zone",
+            "borough": "Borough",
+            "leakage_rate": "% Missing Surcharge",
+            "volume": "Total Trips Audited"
+        })
+        
+        # Display columns that actually exist
+        cols_to_show = [c for c in ['Pickup Zone', 'Borough', '% Missing Surcharge', 'Total Trips Audited'] if c in display_df.columns]
+        st.table(display_df[cols_to_show])
+        
+        st.caption("ℹ️ 'Missing Surcharge' means the trip ended in the congestion zone, but the surcharge field was $0.00.")
+    else:
+        st.warning("No leakage data found.")

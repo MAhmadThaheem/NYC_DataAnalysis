@@ -42,7 +42,7 @@ def standardize_schema(df, taxi_type):
         }
 
     # 2. Select & Rename
-    # We use a list comprehension to select only columns that exist in the file
+    # list comprehension to select only columns that exist in the file
     df = df.select([pl.col(k).alias(v) for k, v in rename_map.items() if k in df.columns])
 
     # 3. Force Types (Crucial for calculations to avoid errors)
@@ -105,9 +105,7 @@ def process_data():
             q = pl.scan_parquet(file_path)
             q = standardize_schema(q, taxi_type)
 
-            # --- Step 2: Apply Logic ---
-            # We collect() here because we are splitting the dataset physically.
-            # One month of data fits easily in RAM (approx 500MB).
+            # --- Step 2: Logic ---
             df_batch = q.collect()
             
             # Tag the rows
